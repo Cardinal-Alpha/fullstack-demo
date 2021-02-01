@@ -1,0 +1,30 @@
+FROM python:3 AS django-mysql
+RUN apt-get update
+RUN apt-get install -y build-essential \
+                        libffi-dev \
+                        python3-dev \
+                        default-libmysqlclient-dev
+RUN python -m pip install --upgrade pip
+RUN pip install --no-cache-dir bcrypt \
+                mysqlclient \
+                django \
+                djangorestframework \
+                pyjwt \
+                Pillow
+ENV TZ='Asia/Jakarta'
+
+
+FROM django-mysql as prod
+ENV DJANGO_ENV='prod'
+WORKDIR /home/backend
+COPY backend/ .
+CMD ./wait-for-it.sh -t 0 $DB_HOST:$DB_PORT &&\
+    python manage.py runserver 0.0.0.0:8000
+
+
+FROM prod as dev
+RUN apt-get install -y rsync
+RUN pip install --no-cache-dir pylint ipykernel debugpy
+ENV DJANGO_ENV='dev'
+CMD ./wait-for-it.sh -t 0 $DB_HOST:$DB_PORT &&\
+    bash -c "while sleep 60; do rsync -rtK --delete . /home/backup && date > ./last_backup.txt ; done"
