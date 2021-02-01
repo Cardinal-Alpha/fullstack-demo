@@ -1,0 +1,21 @@
+FROM node AS base
+RUN apt-get update
+RUN npm install -g create-next-app
+WORKDIR /home
+RUN create-next-app frontend
+WORKDIR /home/frontend
+RUN yarn global add sass
+RUN yarn add primereact primeicons primeflex react-transition-group react-router-dom axios http-proxy-middleware express
+ENV TZ='Asia/Jakarta'
+
+
+FROM base as prod
+RUN rm -rf styles/* public/* pages/* .next/*
+COPY frontend/ .
+CMD yarn run build &&\
+    yarn run start
+
+
+FROM prod AS dev
+RUN apt-get install -y rsync
+CMD bash -c "while sleep 60 ; do rsync -rtK --delete --exclude node_modules . /home/backup && date > ./last_backup.txt ; done"
