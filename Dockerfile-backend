@@ -18,6 +18,7 @@ FROM django-mysql as prod
 ENV DJANGO_ENV='prod'
 WORKDIR /home/backend
 COPY backend/ .
+RUN chmod a+x wait-for-it.sh
 CMD ./wait-for-it.sh -t 0 $DB_HOST:$DB_PORT &&\
     python manage.py runserver 0.0.0.0:8000
 
