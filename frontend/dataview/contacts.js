@@ -110,7 +110,7 @@ export class ContactsTable extends Component {
             });
         }
         let row = {
-            picture: "http://localhost:3000/files/profile_pict/default.png",
+            picture: "/files/profile_pict/default.png",
             birthdate: new Date()
         }
         return <ContactForm buttonIcon='pi pi-plus' buttonLabel='Create'

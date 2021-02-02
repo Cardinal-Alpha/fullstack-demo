@@ -26,10 +26,11 @@ def pictureDelete(instance, *args, **kwargs):
         instance.picture.delete(save=False)
 
 
-#Delete file after not used because update
+#Delete file after not used because update, except default
 @receiver(models.signals.pre_save, sender=Contact)
 def deleteOld(instance, *args, **kwargs):
     if instance.id:
         old = Contact.objects.get(id=instance.id)
         if instance.picture.name != old.picture.name:
-            old.picture.delete(save=False)
+            if not re.search(r'default\.png$', old.picture.name):
+                old.picture.delete(save=False)
