@@ -37,7 +37,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile-frontend
-      target: dev
+      target: prod
     volumes:
       - ./vs_ext:/home/vs_ext
       - ./frontend:/home/backup
