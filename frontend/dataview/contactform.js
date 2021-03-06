@@ -28,7 +28,7 @@ export function ContactForm(props){
         e.preventDefault();
         let fd = new FormData(e.target);
         fd.set('birthdate', fd.get('birthdate').replace(/(\d{2})-(\d{2})-(\d{4})/, "$3-$2-$1") );
-        if(this.profile) fd.append('picture', profile);
+        if(profile) fd.append('picture', profile);
         if(props.submitHandler) props.submitHandler(fd);
         setVisible(false);
         setProfile(null);
@@ -47,8 +47,8 @@ export function ContactForm(props){
     const editable = props.editable;
     return (
         <React.Fragment>
-            <Button icon={props.buttonIcon} label={props.buttonLabel} onClick={()=> this.show()} disabled={Boolean(props.disabled)}/>
-            <Dialog visible={visible} header={<h5>{props.header}</h5>} onHide={this.hide.bind(this)}>
+            <Button icon={props.buttonIcon} label={props.buttonLabel} onClick={()=> setVisible(true)} disabled={Boolean(props.disabled)}/>
+            <Dialog visible={visible} header={<h5>{props.header}</h5>} onHide={()=> setVisible(false)}>
                 <form style={{padding:'1vw'}} onSubmit={e=> doSubmit(e)}>
                     <div className='p-d-flex p-flex-column  p-ai-center input-spacing' style={{width:'30vw'}}>
                         <div className='input-spacing p-d-flex p-flex-column p-ai-center' style={{width:"100%"}}>

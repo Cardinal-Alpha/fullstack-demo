@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, {useRef} from 'react';
 import {Button} from 'primereact/button';
 
 
 export function SimpleUpload(props){
+
+    const input = useRef();
 
     return (
         <React.Fragment>
@@ -11,7 +13,8 @@ export function SimpleUpload(props){
                     label={props.label}
                     onClick={e=>{e.preventDefault(); input.current.click()}}
                     disabled={props.disabled ? true : false}/>
-            <input style={{display:"none"}}
+            <input ref={input}
+                    style={{display:"none"}}
                     type='file'
                     multiple={props.multiple ? true : false}
                     required={props.required ? true : false}

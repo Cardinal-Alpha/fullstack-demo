@@ -23,7 +23,7 @@ export function ContactsTable(props){
     const api = useRef( new RestAPI(API_URL) );
 
     const setPage = e=>{
-        setLoading(true);
+        if(!loading) setLoading(true);
         const rows = e.rows;
         const page = (e.first/rows) + 1;
         let apiProm = undefined;
