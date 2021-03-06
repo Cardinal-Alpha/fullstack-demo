@@ -1,31 +1,26 @@
 
-import React, {Component} from 'react';
+import React from 'react';
 import {Button} from 'primereact/button';
 
 
-export class SimpleUpload extends Component{
+export function SimpleUpload(props){
 
-    constructor(props){
-        super(props);
-        this.input = React.createRef();
-    }
-
-    render(){
-        return (
-            <React.Fragment>
-                <Button icon={this.props.icon} 
-                        label={this.props.label}
-                        onClick={(e)=>{e.preventDefault();this.input.current.click()}}
-                        disabled={this.props.disabled ? true : false}/>
-                <input style={{display:"none"}} ref={this.input}
-                        type='file'
-                        multiple={this.props.multiple ? true : false}
-                        accept={this.props.media}
-                        onChange={(e)=>{
-                            const files = e.target.files
-                            this.props.onChange(files);
-                        }}/>
-            </React.Fragment>
-        )
-    }
+    return (
+        <React.Fragment>
+            <Button icon={props.icon}
+                    label={props.label}
+                    onClick={e=>{e.preventDefault(); input.current.click()}}
+                    disabled={props.disabled ? true : false}/>
+            <input style={{display:"none"}}
+                    type='file'
+                    multiple={props.multiple ? true : false}
+                    required={props.required ? true : false}
+                    accept={props.media}
+                    onChange={e=>{
+                        const files = e.target.files;
+                        if(props.onChange)
+                            props.onChange(files);
+                    }}/>
+        </React.Fragment>
+    )
 }

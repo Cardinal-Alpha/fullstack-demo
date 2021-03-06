@@ -18,4 +18,4 @@ CMD yarn run build &&\
 
 FROM prod AS dev
 RUN apt-get install -y rsync
-CMD bash -c "while sleep 60 ; do rsync -rtK --delete --exclude node_modules . /home/backup && date > ./last_backup.txt ; done"
+CMD bash -c "while sleep 60 ; do : ; done"

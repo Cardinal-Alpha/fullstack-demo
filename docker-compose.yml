@@ -27,6 +27,7 @@ services:
       DB_HOST: database
       DB_PORT: 3306
     volumes:
+      - ./vs_ext:/home/vs_ext
       - ./backend:/home/backup
     depends_on: 
       - database
@@ -36,8 +37,9 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile-frontend
-      target: prod
+      target: dev
     volumes:
+      - ./vs_ext:/home/vs_ext
       - ./frontend:/home/backup
     ports: 
       - '3000:3000'

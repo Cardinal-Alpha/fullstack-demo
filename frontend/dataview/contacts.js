@@ -4,89 +4,64 @@ import {confirmDialog} from 'primereact/confirmdialog';
 import {InputText} from 'primereact/inputtext';
 import {Button} from 'primereact/button';
 
-import React, {Component} from 'react'
+import React, {useState, useRef} from 'react';
 import {ContactForm} from './contactform';
 import {RestAPI} from '../api/rest';
+
 
 const API_URL = '/api/contact';
 
 
-export class ContactsTable extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            contacts:[],
-            index: 0,
-            loading: true,
-            permission:{
-                view: false,
-                change: false,
-                add: false,
-                delete: false
-            },
-            search: "",
-            rows: 10,
-            total: 0
-        };
-        this.api = new RestAPI((perms)=>{
-            this.setState({permission:perms});
-        }, undefined, 'contact');
-        this.api.setapp(API_URL);
-    }
+export function ContactsTable(props){
+    const [contacts, setContacts] = useState([]);
+    const [index, setIndex] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [permission, setPermission] = useState(['view', 'add', 'delete', 'update']);
+    const [search, setSearch] = useState('');
+    const [rows, setRows] = useState(10);
+    const [total, setTotal] =  useState(0);
+    const api = useRef( new RestAPI(API_URL) );
 
-
-    componentDidMount(){
-        this.setPage({
-            first:this.state.index,
-            rows: this.state.rows
-        });
-    }
-
-
-    setPage(e){
-        this.setState({loading:true});
+    const setPage = e=>{
+        setLoading(true);
         const rows = e.rows;
         const page = (e.first/rows) + 1;
         let apiProm = undefined;
-        if(this.state.search.length > 0){
-            apiProm = this.api.queryget(`page=${page}&size=${rows}&search=${this.state.search}`)
+        if(search.length > 0){
+            apiProm = api.current.queryget(`page=${page}&size=${rows}&search=${search}`);
         }else{
-            apiProm = this.api.list(page, rows)
+            apiProm = api.current.list(page, rows);
         }
-        apiProm.then(res=>{
+        apiProm
+        .then(res=>{
             setTimeout(()=>{
-                this.setState({
-                    contacts: res.data.results,
-                    index: e.first,
-                    loading: false,
-                    total: res.data.count
-                })
+                setContacts(res.data.results)
+                setIndex(e.first)
+                setLoading(false)
+                setTotal(res.data.count)
             }, 500);
         })
     }
 
-
-    setTerm(e){
-        const value = e.target.value;
-        this.setState({search: value});
+    const setTerm = e=>{
+        setSearch(e.target.value);
         setTimeout(()=>{
-            if(value == this.state.search){
+            const value = e.target.value;
+            if(value == search){
                 const e = {
-                    rows: this.state.rows,
+                    rows: rows,
                     first: 0
                 };
-                this.setPage(e);
+                setPage(e);
             };
         }, 1000);
     }
 
-
-    displayProfile(row){
+    const displayProfile = row=>{
         return <img src={row.picture} style={{width:'65px', height:'65px', objectFit:'cover'}}/>
     }
 
-
-    displayText(header, fieldKey){
+    const displayText = (header, fieldKey)=>{
         return row=>{
             return (
                 <React.Fragment>
@@ -97,16 +72,15 @@ export class ContactsTable extends Component {
         }
     }
 
-
-    displayCreate(){
+    const displayCreate = ()=>{
         const handler = fdata => {
-            this.api.create(fdata)
+            api.current.create(fdata)
             .then(()=>{
                 const e = {
-                    rows: this.state.rows,
-                    first: this.state.index
+                    rows: rows,
+                    first: index
                 };
-                this.setPage(e);
+                setPage(e);
             });
         }
         let row = {
@@ -114,32 +88,32 @@ export class ContactsTable extends Component {
             birthdate: new Date()
         }
         return <ContactForm buttonIcon='pi pi-plus' buttonLabel='Create'
-                    header='Create Contact' editable={true} data={row} submitHandler={handler}/>
+                    header='Create Contact' editable={true} data={row} submitHandler={handler}
+                    disabled={permission.indexOf('add') < 0}/>
     }
 
-
-    displayEdit(row){
+    const displayEdit = row=>{
         const handlerUpdate = fdata => {
-            this.api.update(row.id, fdata)
+            api.current.update(row.id, fdata)
             .then(()=>{
                 const e = {
-                    rows: this.state.rows,
-                    first: this.state.index
+                    rows: rows,
+                    first: index
                 };
-                this.setPage(e);
+                setPage(e);
             });
         }
         const handlerDelete = ()=>{
-            this.api.delete(row.id)
+            api.current.delete(row.id)
             .then(()=>{
                 const e = {
-                    rows: this.state.rows,
-                    first: this.state.index
+                    rows: rows,
+                    first: index
                 };
-                this.setPage(e);
+                setPage(e);
             });
         }
-        const deleteConfirm = (e)=>{
+        const deleteConfirm = e =>{
             confirmDialog({
                 target: e.currentTarget,
                 message: 'Do you want to delete this record?',
@@ -150,40 +124,46 @@ export class ContactsTable extends Component {
         }
         return (<React.Fragment>
                 <ContactForm buttonIcon='pi pi-pencil' buttonLabel='Edit'
-                            header='Contact Editor' editable={true} data={row} submitHandler={handlerUpdate}/>
-                <Button onClick={deleteConfirm} icon="pi pi-times" label="Delete" className="p-button-danger p-button-outlined" />
+                            header='Contact Editor' editable={true} data={row}
+                            submitHandler={handlerUpdate}
+                            disabled={permission.indexOf('update') < 0}/>
+                <Button onClick={deleteConfirm} icon="pi pi-times" label="Delete" 
+                        className="p-button-danger p-button-outlined"
+                        disabled={permission.indexOf('delete') < 0}/>
                 </React.Fragment>)
     }
 
+    if(loading && contacts.length == 0)
+        setPage({
+            first:index,
+            rows: rows
+        });
 
-    render(){
-
-        if(this.state.permission.view){
-            return (
-                <div className='resposive-table'>
-                    <div className='table-header'>
-                        <div style={{marginRight:"10px"}}>
-                            <span className="p-input-icon-left">
-                                <i className="pi pi-search" />
-                                <InputText value={this.state.search} onChange={this.setTerm.bind(this)} placeholder="Search" />
-                            </span>
-                        </div>
-                        {this.displayCreate()}
+    if(permission.indexOf('view') >= 0){
+        return (
+            <div className='resposive-table'>
+                <div className='table-header'>
+                    <div style={{marginRight:"10px"}}>
+                        <span className="p-input-icon-left">
+                            <i className="pi pi-search" />
+                            <InputText value={search} onChange={setTerm} placeholder="Search" />
+                        </span>
                     </div>
-                    <DataTable value={this.state.contacts} paginator rows={this.state.rows} totalRecords={this.state.total}
-                        lazy first={this.state.index} onPage={this.setPage.bind(this)} loading={this.state.loading}>
-                        <Column body={this.displayProfile} />
-                        <Column header="First Name" body={this.displayText("First Name", "first_name")}/>
-                        <Column header="Last Name" body={this.displayText("Last Name", "last_name")}/>
-                        <Column header="Birthdate" body={this.displayText("Birthdate Name", "birthdate")}/>
-                        <Column header="Email" body={this.displayText("Email", "email")}/>
-                        <Column header="Phone Number" body={this.displayText("Phone Number", "phone_number")}/>
-                        <Column body={this.displayEdit.bind(this)} />
-                    </DataTable>
+                    {displayCreate()}
                 </div>
-            )
-        }else{
-            return null;
-        }
+                <DataTable value={contacts} paginator rows={rows} totalRecords={total}
+                    lazy first={index} onPage={setPage} loading={loading}>
+                    <Column body={displayProfile} />
+                    <Column header="First Name" body={displayText("First Name", "first_name")}/>
+                    <Column header="Last Name" body={displayText("Last Name", "last_name")}/>
+                    <Column header="Birthdate" body={displayText("Birthdate Name", "birthdate")}/>
+                    <Column header="Email" body={displayText("Email", "email")}/>
+                    <Column header="Phone Number" body={displayText("Phone Number", "phone_number")}/>
+                    <Column body={displayEdit} />
+                </DataTable>
+            </div>
+        )
+    }else{
+        return null;
     }
 }

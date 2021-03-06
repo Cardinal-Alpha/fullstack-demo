@@ -1,10 +1,9 @@
 import axios from 'axios';
-import {BaseAPI} from './base';
 
 
-export class RestAPI extends BaseAPI{
+export class RestAPI{
     
-    setapp(url){
+    constructor(url){
         this.app = url
     }
 
@@ -14,28 +13,63 @@ export class RestAPI extends BaseAPI{
             axios.get(app).then(res=>{
                 resolve(res);
             }).catch(err=>{
-                reject(err);
+                reject(err.response);
             });
         });
     }
 
     create(data){
-        return axios.post(`${this.app}`, data);
+        return new Promise((resolve, reject)=>{
+                axios.post(`${this.app}`, data)
+                .then(res=>{
+                    resolve(res);
+                }).catch(err=>{
+                    reject(err.response);
+                });
+            });
     }
 
     retrieve(id){
-        return axios.get(`${this.app}/${id}`);
+        return new Promise((resolve, reject)=>{
+                axios.get(`${this.app}/${id}`)
+                .then(res=>{
+                    resolve(res);
+                }).catch(err=>{
+                    reject(err.response);
+                });
+            });
     }
 
     update(id, data){
-        return axios.patch(`${this.app}/${id}`, data);
+        return new Promise((resolve, reject)=>{
+                axios.patch(`${this.app}/${id}`, data)
+                .then(res=>{
+                    resolve(res);
+                }).catch(err=>{
+                    reject(err.response);
+                });
+            });
     }
 
     delete(id){
-        return axios.delete(`${this.app}/${id}`);
+        return new Promise((resolve, reject)=>{
+                axios.delete(`${this.app}/${id}`)
+                .then(res=>{
+                    resolve(res);
+                }).catch(err=>{
+                    reject(err.response);
+                });
+            });
     }
 
     queryget(payload){
-        return axios.get(`${this.app}?${payload}`);
+        return new Promise((resolve, reject)=>{
+                axios.get(`${this.app}?${payload}`)
+                .then(res=>{
+                    resolve(res);
+                }).catch(err=>{
+                    reject(err.response);
+                });
+            });
     }
 }
